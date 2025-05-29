@@ -1,6 +1,8 @@
 package com.example.jobfinder.controller
 
 import com.example.jobfinder.dto.VacancyRequest
+import com.example.jobfinder.dto.VacancyResponse
+import com.example.jobfinder.dto.VacancyUpdateRequest
 import com.example.jobfinder.model.Role
 import com.example.jobfinder.model.User
 import com.example.jobfinder.model.Vacancy
@@ -41,6 +43,39 @@ class VacancyController(
 
         return ResponseEntity.ok(vacancyService.getAll())
     }
+
+
+    @PutMapping("/{id}")
+    fun updateVacancy(
+        @AuthenticationPrincipal user: User,
+        @PathVariable id: Long,
+        @RequestBody request: VacancyUpdateRequest
+    ): ResponseEntity<VacancyResponse> {
+        if (user.role != Role.EMPLOYER) {
+            return ResponseEntity.status(403).build()
+        }
+        val updated = vacancyService.updateVacancy(user, id, request)
+        return ResponseEntity.ok(vacancyService.mapToResponse(updated))
+    }
+
+
+    @DeleteMapping("/{id}")
+    fun deleteVacancy(
+        @AuthenticationPrincipal user: User,
+        @PathVariable id: Long
+    ): ResponseEntity<Void> {
+        return try {
+            vacancyService.deleteVacancy(user, id)
+            ResponseEntity.noContent().build()
+        } catch (e: IllegalAccessException) {
+            ResponseEntity.status(403).build()
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.notFound().build()
+        }
+    }
+
+
+
 
 
 

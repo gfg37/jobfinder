@@ -1,8 +1,11 @@
 package com.example.jobfinder.service
 
 import com.example.jobfinder.dto.RegisterRequest
+import com.example.jobfinder.dto.UserProfileResponse
+import com.example.jobfinder.dto.UserProfileUpdateRequest
 import com.example.jobfinder.model.User
 import com.example.jobfinder.repository.UserRepository
+import jakarta.transaction.Transactional
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -32,6 +35,31 @@ class UserService(
         }
         return user
     }
+    fun getProfile(user: User): UserProfileResponse {
+        return UserProfileResponse(
+            id = user.id,
+            name = user.name,
+            email = user.email,
+            role = user.role.name
+        )
+    }
 
+    @Transactional
+    fun updateProfile(user: User, request: UserProfileUpdateRequest): UserProfileResponse {
+        val managedUser = userRepository.findById(user.id).orElseThrow()
+
+        val updatedUser = managedUser.copy(
+            name = request.name,
+            password = passwordEncoder.encode(request.password)
+        )
+        userRepository.save(updatedUser)
+
+        return UserProfileResponse(
+            id = updatedUser.id,
+            name = updatedUser.name,
+            email = updatedUser.email,
+            role = updatedUser.role.name
+        )
+    }
 
 }

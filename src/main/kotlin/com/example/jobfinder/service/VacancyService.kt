@@ -2,9 +2,11 @@ package com.example.jobfinder.service
 
 import com.example.jobfinder.dto.VacancyRequest
 import com.example.jobfinder.dto.VacancyResponse
+import com.example.jobfinder.dto.VacancyUpdateRequest
 import com.example.jobfinder.model.User
 import com.example.jobfinder.model.Vacancy
 import com.example.jobfinder.repository.VacancyRepository
+
 import org.springframework.stereotype.Service
 
 @Service
@@ -27,6 +29,34 @@ class VacancyService(
 
     fun getEmployerVacancies(user: User): List<Vacancy> =
         vacancyRepository.findAllByEmployerId(user.id)
+
+    fun updateVacancy(user: User, id: Long, request: VacancyUpdateRequest): Vacancy {
+        val vacancy = vacancyRepository.findById(id).orElseThrow()
+        if (vacancy.employer.id != user.id) {
+            throw IllegalAccessException("You are not allowed to update this vacancy")
+        }
+
+        val updated = vacancy.copy(
+            title = request.title,
+            description = request.description,
+            salary = request.salary.toString()
+        )
+
+        return vacancyRepository.save(updated)
+    }
+
+    fun deleteVacancy(user: User, vacancyId: Long) {
+        val vacancy = vacancyRepository.findById(vacancyId)
+            .orElseThrow { IllegalArgumentException("Вакансия не найдена") }
+
+        if (vacancy.employer.id != user.id) {
+            throw IllegalAccessException("Вы не можете удалить чужую вакансию")
+        }
+
+        vacancyRepository.delete(vacancy)
+    }
+
+
 
 
 

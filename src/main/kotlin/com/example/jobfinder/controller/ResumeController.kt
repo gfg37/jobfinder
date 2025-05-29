@@ -2,6 +2,7 @@ package com.example.jobfinder.controller
 
 import com.example.jobfinder.dto.ResumeRequest
 import com.example.jobfinder.dto.ResumeResponse
+import com.example.jobfinder.dto.ResumeUpdateRequest
 import com.example.jobfinder.model.Resume
 import com.example.jobfinder.model.Role
 import com.example.jobfinder.model.User
@@ -43,5 +44,38 @@ class ResumeController(
         }
         return ResponseEntity.ok(resumeService.getAllResumes())
     }
+
+    @PutMapping("/{id}")
+    fun updateResume(
+        @AuthenticationPrincipal user: User,
+        @PathVariable id: Long,
+        @RequestBody request: ResumeUpdateRequest
+    ): ResponseEntity<ResumeResponse> {
+        if (user.role != Role.APPLICANT) {
+            return ResponseEntity.status(403).build()
+        }
+        val updated = resumeService.updateResume(user, id, request)
+        return ResponseEntity.ok(resumeService.mapToResponse(updated))
+    }
+
+    @DeleteMapping("/{id}")
+    fun deleteResume(
+        @AuthenticationPrincipal user: User,
+        @PathVariable id: Long
+    ): ResponseEntity<Void> {
+        return try {
+            resumeService.deleteResume(user, id)
+            ResponseEntity.noContent().build()
+        } catch (e: IllegalAccessException) {
+            ResponseEntity.status(403).build()
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.notFound().build()
+        }
+    }
+
+
+
+
+
 
 }

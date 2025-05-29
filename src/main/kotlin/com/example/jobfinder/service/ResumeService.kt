@@ -2,10 +2,13 @@ package com.example.jobfinder.service
 
 import com.example.jobfinder.dto.ResumeRequest
 import com.example.jobfinder.dto.ResumeResponse
+import com.example.jobfinder.dto.ResumeUpdateRequest
 import com.example.jobfinder.model.Resume
 import com.example.jobfinder.model.User
 import com.example.jobfinder.repository.ResumeRepository
+
 import org.springframework.stereotype.Service
+
 
 @Service
 class ResumeService(
@@ -41,4 +44,35 @@ class ResumeService(
             userName = resume.user.name
         )
     }
+
+    fun updateResume(user: User, id: Long, request: ResumeUpdateRequest): Resume {
+        val resume = resumeRepository.findById(id).orElseThrow()
+        if (resume.user.id != user.id) {
+            throw IllegalAccessException("Вы не можете редактировать чужое резюме")
+        }
+
+        val updatedResume = resume.copy(
+            position = request.position,
+            experience = request.experience,
+            education = request.education,
+            skills = request.skills
+        )
+
+        return resumeRepository.save(updatedResume)
+    }
+
+
+
+
+    fun deleteResume(user: User, resumeId: Long) {
+        val resume = resumeRepository.findById(resumeId)
+            .orElseThrow { IllegalArgumentException("Резюме не найдено") }
+
+        if (resume.user.id != user.id) {
+            throw IllegalAccessException("Вы не можете удалить чужое резюме")
+        }
+
+        resumeRepository.delete(resume)
+    }
+
 }

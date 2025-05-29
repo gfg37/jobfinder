@@ -15,5 +15,11 @@ data class Resume(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    val user: User
+    val user: User,
+
+    @OneToMany(mappedBy = "resume", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val applications: MutableList<Application> = mutableListOf()
+
+
+
 )
