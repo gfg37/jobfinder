@@ -14,6 +14,8 @@ import com.example.jobfinder.data.RetrofitClient
 import com.example.jobfinder.data.UserSession
 import com.example.jobfinder.data.model.ResumeResponse
 import kotlinx.coroutines.launch
+import org.json.JSONObject
+import android.util.Base64
 
 @Composable
 fun BrowseResumesScreen(navController: NavController) {
@@ -64,4 +66,57 @@ fun BrowseResumesScreen(navController: NavController) {
             }
         }
     }
+    LazyColumn {
+        items(resumes) { resume ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                elevation = CardDefaults.cardElevation()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Должность: ${resume.position}", style = MaterialTheme.typography.titleMedium)
+                    Text("Опыт: ${resume.experience}")
+                    Text("Образование: ${resume.education}")
+                    Text("Навыки: ${resume.skills}")
+
+                    // Кнопка добавления в избранное (видна только работодателям)
+                    val role = remember { mutableStateOf<String?>(null) }
+                    LaunchedEffect(Unit) {
+                        val token = session.getToken() ?: return@LaunchedEffect
+                        val parts = token.split(".")
+                        if (parts.size > 1) {
+                            val payload = String(
+                                Base64.decode(parts[1], Base64.URL_SAFE or Base64.NO_PADDING),
+                                Charsets.UTF_8
+                            )
+                            role.value = JSONObject(payload).getString("role")
+                        }
+                    }
+
+                    if (role.value == "EMPLOYER") {
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    try {
+                                        val token = session.getToken() ?: ""
+                                        val response = RetrofitClient.api.addResumeToFavorites("Bearer $token", resume.id)
+                                        if (response.isSuccessful) {
+                                            Toast.makeText(context, "Добавлено в избранное", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("В избранное")
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
+

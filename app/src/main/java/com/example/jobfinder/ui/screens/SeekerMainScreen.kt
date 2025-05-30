@@ -56,6 +56,8 @@ fun SeekerMainScreen(navController: NavController, toggleTheme: () -> Unit) {
             ) {
                 Text("Посмотреть вакансии")
             }
+
+
         }
     }
 }

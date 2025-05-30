@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.jobfinder.data.RetrofitClient
 import com.example.jobfinder.data.UserSession
+import com.example.jobfinder.data.model.ApplicationRequest
 import com.example.jobfinder.data.model.VacancyResponse
 import kotlinx.coroutines.launch
 
@@ -66,6 +67,78 @@ fun BrowseVacanciesScreen(navController: NavController) {
             }
         }
     }
-}
 
+// Обновим BrowseVacanciesScreen.kt
+
+
+    LazyColumn {
+        items(vacancies) { vacancy ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                elevation = CardDefaults.cardElevation()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Должность: ${vacancy.title}", style = MaterialTheme.typography.titleMedium)
+                    Text("Описание: ${vacancy.description}")
+                    Text("Требования: ${vacancy.requirements}")
+                    Text("Зарплата: ${vacancy.salary}")
+                    Text("Работодатель: ${vacancy.employerUsername}")
+
+                    // Добавляем кнопку отклика
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                try {
+                                    val token = session.getToken() ?: ""
+                                    // Получаем первое резюме пользователя
+                                    val resumesResponse = RetrofitClient.api.getMyResumes("Bearer $token")
+                                    if (resumesResponse.isSuccessful && resumesResponse.body()?.isNotEmpty() == true) {
+                                        val resumeId = resumesResponse.body()!![0].id
+                                        val response = RetrofitClient.api.applyForVacancy(
+                                            "Bearer $token",
+                                            ApplicationRequest(resumeId, vacancy.id)
+                                        )
+                                        if (response.isSuccessful) {
+                                            Toast.makeText(context, "Отклик отправлен", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } else {
+                                        Toast.makeText(context, "Сначала создайте резюме", Toast.LENGTH_SHORT).show()
+                                        navController.navigate("create_resume")
+                                    }
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Откликнуться")
+                    }
+
+                    // Кнопка добавления в избранное
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                try {
+                                    val token = session.getToken() ?: ""
+                                    val response = RetrofitClient.api.addVacancyToFavorites("Bearer $token", vacancy.id)
+                                    if (response.isSuccessful) {
+                                        Toast.makeText(context, "Добавлено в избранное", Toast.LENGTH_SHORT).show()
+                                    }
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("В избранное")
+                    }
+                }
+            }
+        }
+    }
+}
 

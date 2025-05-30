@@ -93,5 +93,7 @@ fun CreateVacancyScreen(navController: NavController) {
         ) {
             Text("Создать")
         }
+
+
     }
 }

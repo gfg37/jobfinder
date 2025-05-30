@@ -1,16 +1,27 @@
-package com.example.jobfinder.ui.screens
-
 import android.widget.Toast
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.jobfinder.data.RetrofitClient
-import com.example.jobfinder.data.model.ResumeRequest
 import com.example.jobfinder.data.UserSession
+import com.example.jobfinder.data.model.ResumeRequest
 import kotlinx.coroutines.launch
 
 @Composable
@@ -38,32 +49,7 @@ fun CreateResumeScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = experience,
-            onValueChange = { experience = it },
-            label = { Text("Опыт работы") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = education,
-            onValueChange = { education = it },
-            label = { Text("Образование") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = skills,
-            onValueChange = { skills = it },
-            label = { Text("Навыки") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        // ... остальные поля ввода ...
 
         Spacer(modifier = Modifier.height(24.dp))
 

@@ -52,6 +52,8 @@ fun EmployerMainScreen(navController: NavController, toggleTheme: () -> Unit) {
                 Text("Посмотреть резюме")
             }
 
+
+
         }
     }
 }
