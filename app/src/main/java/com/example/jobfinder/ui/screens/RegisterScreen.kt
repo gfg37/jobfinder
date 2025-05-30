@@ -9,7 +9,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.jobfinder.data.RetrofitClient
 import com.example.jobfinder.data.UserPreferences
+import com.example.jobfinder.data.model.RegisterRequest
 import kotlinx.coroutines.launch
 
 @Composable
@@ -18,8 +20,20 @@ fun RegisterScreen(navController: NavController) {
     var login by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var selectedRole by rememberSaveable { mutableStateOf("Соискатель") }
+    var isLoading by rememberSaveable { mutableStateOf(false) }
+    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+
+    // Маппинг русских названий на английские для сервера
+    val roleMapping = mapOf(
+        "Соискатель" to "APPLICANT",
+        "Работодатель" to "EMPLOYER"
+    )
 
     val roles = listOf("Соискатель", "Работодатель")
+    val apiService = RetrofitClient.api
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val userPreferences = remember { UserPreferences(context) }
 
     Column(
         modifier = Modifier
@@ -29,6 +43,15 @@ fun RegisterScreen(navController: NavController) {
     ) {
         Text(text = "Регистрация", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
+
+        errorMessage?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
         OutlinedTextField(
             value = fullName,
@@ -76,21 +99,52 @@ fun RegisterScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        val context = LocalContext.current
-        val scope = rememberCoroutineScope()
-        val userPreferences = remember { UserPreferences(context) }
-
         Button(
             onClick = {
+                if (fullName.isBlank() || login.isBlank() || password.isBlank()) {
+                    errorMessage = "Заполните все поля"
+                    return@Button
+                }
+
                 scope.launch {
-                    userPreferences.saveUserRole(selectedRole)
-                    navController.navigate("login_screen")
+                    isLoading = true
+                    errorMessage = null
+                    try {
+                        // Преобразуем русскую роль в английскую для сервера
+                        val serverRole = roleMapping[selectedRole] ?: "APPLICANT"
+
+                        val response = apiService.register(
+                            RegisterRequest(
+                                name = fullName,
+                                email = login,
+                                password = password,
+                                role = serverRole
+                            )
+                        )
+
+                        if (response.isSuccessful) {
+                            userPreferences.saveUserRole(selectedRole)
+                            navController.navigate("login_screen") {
+                                popUpTo("register_screen") { inclusive = true }
+                            }
+                        } else {
+                            errorMessage = "Ошибка регистрации: ${response.message()}"
+                        }
+                    } catch (e: Exception) {
+                        errorMessage = "Ошибка соединения: ${e.localizedMessage}"
+                    } finally {
+                        isLoading = false
+                    }
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading
         ) {
-            Text("Создать аккаунт")
+            if (isLoading) {
+                CircularProgressIndicator()
+            } else {
+                Text("Создать аккаунт")
+            }
         }
-
     }
 }

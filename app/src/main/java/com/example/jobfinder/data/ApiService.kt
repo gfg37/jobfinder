@@ -5,6 +5,7 @@ import com.example.jobfinder.data.model.ApplicationRequest
 import com.example.jobfinder.data.model.ApplicationResponse
 import com.example.jobfinder.data.model.AuthResponse
 import com.example.jobfinder.data.model.LoginRequest
+import com.example.jobfinder.data.model.RegisterRequest
 import com.example.jobfinder.data.model.ResumeRequest
 import com.example.jobfinder.data.model.ResumeResponse
 import com.example.jobfinder.data.model.UpdateApplicationStatusRequest
@@ -133,4 +134,8 @@ interface ApiService {
     suspend fun getFavoriteResumes(
         @Header("Authorization") token: String
     ): Response<List<ResumeResponse>>
+
+    // Добавьте этот метод в ApiService
+    @POST("/api/auth/register")
+    suspend fun register(@Body request: RegisterRequest): Response<AuthResponse>
 }
