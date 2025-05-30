@@ -46,4 +46,7 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: VacancyRequest
     ): Response<VacancyResponse>
+
+
+
 }

@@ -2,23 +2,19 @@ package com.example.jobfinder.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.jobfinder.data.RetrofitClient
-import com.example.jobfinder.data.UserSession
 import com.example.jobfinder.data.model.ResumeRequest
+import com.example.jobfinder.data.UserSession
 import kotlinx.coroutines.launch
 
 @Composable
 fun CreateResumeScreen(navController: NavController) {
-
-
     val context = LocalContext.current
     val session = remember { UserSession(context) }
     val scope = rememberCoroutineScope()
@@ -28,23 +24,18 @@ fun CreateResumeScreen(navController: NavController) {
     var education by remember { mutableStateOf("") }
     var skills by remember { mutableStateOf("") }
 
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp)) {
 
-
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-    ) {
-        Text("Создание резюме", style = MaterialTheme.typography.headlineMedium)
+        Text("Создание резюме", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = position,
             onValueChange = { position = it },
-            label = { Text("Должность") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+            label = { Text("Желаемая должность") },
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -53,8 +44,7 @@ fun CreateResumeScreen(navController: NavController) {
             value = experience,
             onValueChange = { experience = it },
             label = { Text("Опыт работы") },
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 3
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -63,8 +53,7 @@ fun CreateResumeScreen(navController: NavController) {
             value = education,
             onValueChange = { education = it },
             label = { Text("Образование") },
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 2
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -73,43 +62,34 @@ fun CreateResumeScreen(navController: NavController) {
             value = skills,
             onValueChange = { skills = it },
             label = { Text("Навыки") },
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 3
+            modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = {
-                if (position.isBlank() || experience.isBlank() || education.isBlank() || skills.isBlank()) {
-                    Toast.makeText(context, "Заполните все поля", Toast.LENGTH_SHORT).show()
-                } else {
-                    scope.launch {
-                        val token = session.getToken()
-                        if (token == null) {
-                            Toast.makeText(context, "Вы не авторизованы", Toast.LENGTH_SHORT).show()
-                            return@launch
-                        }
-
-                        val resume = ResumeRequest(position, experience, education, skills)
-                        val response = RetrofitClient.api.createResume("Bearer $token", resume)
+                scope.launch {
+                    try {
+                        val token = session.getToken() ?: ""
+                        val response = RetrofitClient.api.createResume(
+                            "Bearer $token",
+                            ResumeRequest(position, experience, skills, education)
+                        )
                         if (response.isSuccessful) {
-                            Toast.makeText(context, "Резюме отправлено", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Резюме создано", Toast.LENGTH_SHORT).show()
                             navController.popBackStack()
                         } else {
-                            Toast.makeText(
-                                context,
-                                "Ошибка: ${response.code()}",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            Toast.makeText(context, "Ошибка при создании", Toast.LENGTH_SHORT).show()
                         }
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Сохранить резюме")
+            Text("Создать")
         }
-
     }
 }

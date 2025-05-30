@@ -4,7 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import CreateVacancyScreen
+
+import com.example.jobfinder.ui.screens.BrowseResumesScreen
+import com.example.jobfinder.ui.screens.BrowseVacanciesScreen
+import com.example.jobfinder.ui.screens.CreateResumeScreen
+import com.example.jobfinder.ui.screens.CreateVacancyScreen
 import com.example.jobfinder.ui.screens.EmployerMainScreen
 import com.example.jobfinder.ui.screens.LoginScreen
 import com.example.jobfinder.ui.screens.RegisterScreen
@@ -33,9 +37,24 @@ fun AppNavigation(
             SearchScreen()
         }
 
+        composable("create_resume") { CreateResumeScreen(navController) }
+
+        composable("browse_resumes") {
+            BrowseResumesScreen(navController)
+        }
+
+
         composable("create_vacancy") {
             CreateVacancyScreen(navController)
         }
+
+        composable("browse_vacancies") {
+            BrowseVacanciesScreen(navController)
+        }
+
+
+
+
 
     }
 }

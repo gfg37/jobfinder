@@ -1,11 +1,11 @@
+package com.example.jobfinder.ui.screens
+
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.jobfinder.data.RetrofitClient
@@ -19,34 +19,25 @@ fun CreateVacancyScreen(navController: NavController) {
     val session = remember { UserSession(context) }
     val scope = rememberCoroutineScope()
 
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
+    var position by remember { mutableStateOf("") }
     var requirements by remember { mutableStateOf("") }
+    var conditions by remember { mutableStateOf("") }
     var salary by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp)
+            .padding(16.dp)
     ) {
-        Text("Создание вакансии", style = MaterialTheme.typography.headlineMedium)
+        Text("Создать вакансию", style = MaterialTheme.typography.headlineSmall)
+
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            value = title,
-            onValueChange = { title = it },
-            label = { Text("Название") },
+            value = position,
+            onValueChange = { position = it },
+            label = { Text("Должность") },
             modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("Описание") },
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 3
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -55,8 +46,16 @@ fun CreateVacancyScreen(navController: NavController) {
             value = requirements,
             onValueChange = { requirements = it },
             label = { Text("Требования") },
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 3
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = conditions,
+            onValueChange = { conditions = it },
+            label = { Text("Условия") },
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -65,41 +64,34 @@ fun CreateVacancyScreen(navController: NavController) {
             value = salary,
             onValueChange = { salary = it },
             label = { Text("Зарплата") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = {
-                if (title.isBlank() || description.isBlank() || requirements.isBlank() || salary.isBlank()) {
-                    Toast.makeText(context, "Заполните все поля", Toast.LENGTH_SHORT).show()
-                } else {
-                    scope.launch {
-                        val token = session.getToken()
-                        if (token == null) {
-                            Toast.makeText(context, "Вы не авторизованы", Toast.LENGTH_SHORT).show()
-                            return@launch
-                        }
-
-                        val vacancy = VacancyRequest(title, description, requirements, salary)
-                        val response = RetrofitClient.api.createVacancy("Bearer $token", vacancy)
-
+                scope.launch {
+                    try {
+                        val token = session.getToken() ?: ""
+                        val response = RetrofitClient.api.createVacancy(
+                            "Bearer $token",
+                            VacancyRequest(position, requirements, conditions, salary)
+                        )
                         if (response.isSuccessful) {
-                            Toast.makeText(context, "Вакансия опубликована", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Вакансия создана", Toast.LENGTH_SHORT).show()
                             navController.popBackStack()
                         } else {
-                            Toast.makeText(context, "Ошибка: ${response.code()}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Ошибка при создании", Toast.LENGTH_SHORT).show()
                         }
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Опубликовать")
+            Text("Создать")
         }
     }
 }
-
-
