@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface VacancyRepository : JpaRepository<Vacancy, Long> {
     fun findAllByEmployerId(employerId: Long): List<Vacancy>
+
 }

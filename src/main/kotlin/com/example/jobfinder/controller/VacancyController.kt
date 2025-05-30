@@ -39,9 +39,11 @@ class VacancyController(
     }
 
     @GetMapping
-    fun getAll(): ResponseEntity<List<Vacancy>> {
-
-        return ResponseEntity.ok(vacancyService.getAll())
+    fun getAllVacancies(@AuthenticationPrincipal user: User): ResponseEntity<List<VacancyResponse>> {
+        if (user.role != Role.APPLICANT) {
+            return ResponseEntity.status(403).build()
+        }
+        return ResponseEntity.ok(vacancyService.getAllVacancies())
     }
 
 

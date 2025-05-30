@@ -25,7 +25,10 @@ class VacancyService(
         return vacancyRepository.save(vacancy)
     }
 
-    fun getAll(): List<Vacancy> = vacancyRepository.findAll()
+    fun getAllVacancies(): List<VacancyResponse> =
+        vacancyRepository.findAll().map { mapToResponse(it) }
+
+
 
     fun getEmployerVacancies(user: User): List<Vacancy> =
         vacancyRepository.findAllByEmployerId(user.id)
