@@ -37,9 +37,7 @@ fun AppNavigation(
         composable("employer_main") {
             EmployerMainScreen(navController, toggleTheme)
         }
-        composable("search_screen") {
-            SearchScreen()
-        }
+        composable("search_screen") { SearchScreen(navController, toggleTheme) }
 
         composable("create_resume") { CreateResumeScreen(navController) }
 
